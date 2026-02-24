@@ -5,7 +5,7 @@ a = Analysis(
     ['scraper_app.py'],
     pathex=[],
     binaries=[],
-    datas=[('assets/gear-outline-dark.png', 'assets'), ('assets/gear-outline-light.png', 'assets')],
+    datas=[('assets/gear-outline-dark.png', 'assets'), ('assets/gear-outline-light.png', 'assets'), ('assets/studi0scraper-title-dark.png', 'assets'), ('assets/studi0scraper-title-light.png', 'assets')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

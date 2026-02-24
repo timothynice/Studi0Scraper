@@ -1,0 +1,26 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+.venv/
+venv/
+.env
+
+# Packaging/build output
+build/
+dist/
+release/
+*.egg-info/
+
+# Generated icon artifacts
+assets/Studi0Scraper.iconset/
+assets/Studi0Scraper.icns
+assets/studi0scraper-icon-1024.png
+
+# Local crawler output
+site-export/

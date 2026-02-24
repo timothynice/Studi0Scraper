@@ -1,120 +1,109 @@
-# Site Content + Image Scraper
+# Studi0Scraper
 
-Crawls a website from a base URL, visits internal pages, and saves content/images in organized per-page folders.
+Studi0Scraper is a desktop + CLI website crawler that exports:
+- page content as clean Markdown (`content.md`)
+- page images into per-page `images/` folders
 
-## What it does
+It supports dark/light theming, appearance presets, and controlled crawl settings.
 
-- Crawls internal links one page at a time (BFS crawl).
-- Creates one folder per page based on URL path.
-- Saves:
-  - `content.md` (formatted markdown of visible page content)
-  - `images/` (downloaded image files)
-- Tries to pick high-res image variants from `srcset` and Squarespace image URLs.
-- Writes a `crawl-summary.json` at the output root.
+## Requirements
 
-## Quick start
+- macOS (for `.app` build/install scripts)
+- Python 3.10+
+
+## Fastest Way To Rebuild + Run
+
+Use this one command:
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-python site_scraper.py "https://your-site.com" --output "./site-export"
+./scripts/rebuild_and_run.sh
 ```
 
-## Basic mac app UI
+It will:
+1. Stop running app instances.
+2. Clean old build artifacts.
+3. Build a fresh `Studi0Scraper.app`.
+4. Install it into `~/Applications`.
+5. Launch it.
 
-You can run a simple desktop app wrapper to choose URL + destination folder and start/stop a crawl:
+## Command Reference
 
 ```bash
+# Create/refresh .venv and install all dependencies
+./scripts/bootstrap.sh
+
+# Stop running app instances
+./scripts/stop_app.sh
+
+# Remove build artifacts
+./scripts/clean.sh
+
+# Build standalone app bundle
+./build_macos_app.sh
+
+# Install built app to ~/Applications (build first if missing)
+./scripts/install_app.sh --build
+
+# Install and launch
+./scripts/install_app.sh --build --launch
+
+# Create distributable zip in release/
+./scripts/release_zip.sh
+```
+
+Installed app path:
+
+```text
+~/Applications/Studi0Scraper.app
+```
+
+## Run From Source (No App Bundle)
+
+```bash
+./scripts/bootstrap.sh
 source .venv/bin/activate
 python scraper_app.py
 ```
 
-The app uses your current Python environment and runs the crawler directly in the app process.
-
-## Build standalone `.app` (macOS)
-
-Build a distributable app bundle with icon assets:
+## CLI Usage
 
 ```bash
-cd /Users/TimNice/Development/WebScraper
-./build_macos_app.sh
+python site_scraper.py "https://example.com" --output "./site-export"
 ```
 
-Output app:
-
-- `/Users/TimNice/Development/WebScraper/release/Studi0Scraper.app`
-
-## Useful options
+Useful options:
 
 ```bash
-python site_scraper.py "https://your-site.com" \
+python site_scraper.py "https://example.com" \
   --output "./site-export" \
-  --max-pages 5000 \
-  --delay 0.2 \
-  --timeout 30 \
+  --max-pages 2000 \
+  --delay 0.3 \
+  --timeout 20 \
   --include-subdomains
+
+# Content only
+python site_scraper.py "https://example.com" --no-images
+
+# Images only
+python site_scraper.py "https://example.com" --no-content
 ```
 
-Capture controls:
-
-```bash
-# Capture only content markdown
-python site_scraper.py "https://your-site.com" --no-images
-
-# Capture only images
-python site_scraper.py "https://your-site.com" --no-content
-```
-
-Ignore robots.txt only if you own the site and explicitly want that behavior:
-
-```bash
-python site_scraper.py "https://your-site.com" --ignore-robots
-```
-
-If your local environment has TLS certificate chain issues, you can bypass verification:
-
-```bash
-python site_scraper.py "https://your-site.com" --insecure
-```
-
-## Troubleshooting
-
-If you see this pattern:
-
-- `[skip robots] https://...`
-- `"pages_processed": 0`
-
-it means robots rules prevented crawling your starting URL. If this is your own site and you explicitly want to export it anyway, run with:
-
-```bash
-python site_scraper.py "https://your-site.com" --ignore-robots
-```
-
-## Output layout
+## Output Layout
 
 ```text
 site-export/
   crawl-summary.json
-  your-site-com/
+  example-com/
     home/
       content.md
       images/
-        hero-image.jpg
     about/
       content.md
       images/
-        team-photo.jpg
 ```
 
-## Notes for Squarespace
+## Notes
 
-- Squarespace often serves responsive image URLs (`?format=750w`, `?format=1500w`, etc.).
-- This scraper attempts to request larger variants (`2500w`) when available.
-- Not every asset can be recovered at original upload resolution; this depends on how Squarespace stores/serves the asset.
-
-## Next improvements (optional)
-
-- Add resume mode (skip already-saved pages).
-- Add hash-based dedupe across the entire site.
-- Add Playwright fallback for JS-rendered galleries.
+- At least one capture mode (images/content) must be enabled.
+- `robots.txt` is respected by default; use `--ignore-robots` only when appropriate.
+- Build artifacts (`build/`, `dist/`, `release/`) are intentionally not source-controlled.

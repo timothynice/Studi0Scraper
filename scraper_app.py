@@ -44,6 +44,8 @@ ENTRY_RADIUS = 10
 CARD_RADIUS = 14
 THEME_SETTINGS_PATH = Path.home() / ".studi0scraper-theme.json"
 LEGACY_THEME_SETTINGS_PATH = Path.home() / ".webscraper-theme.json"
+TITLE_LOGO_LIGHT_FILE = "studi0scraper-title-light.png"
+TITLE_LOGO_DARK_FILE = "studi0scraper-title-dark.png"
 
 
 @dataclass(frozen=True)
@@ -171,6 +173,8 @@ class ScraperApp(ctk.CTk):
         self.theme_dropdown_width = 252
         self.gear_icon: ctk.CTkImage | None = None
         self.gear_icon_loaded = False
+        self.title_logo: ctk.CTkImage | None = None
+        self.title_logo_loaded = False
         self.root_frame: ctk.CTkFrame | None = None
 
         self.url_var = tk.StringVar(value="https://www.timothynice.com")
@@ -195,6 +199,7 @@ class ScraperApp(ctk.CTk):
         self._apply_appearance()
         self._resolve_accent_colors()
         self._load_gear_icon()
+        self._load_title_logo()
         self._build_ui()
         self._bind_shortcuts()
         self.after(120, self._pump_logs)
@@ -268,7 +273,7 @@ class ScraperApp(ctk.CTk):
             f"#{adjust_hex_brightness(dark_hex, 0.9)}",
         )
 
-    def _load_gear_icon(self) -> None:
+    def _asset_search_paths(self) -> list[Path]:
         base_paths: list[Path] = []
         script_base = Path(__file__).resolve().parent
         base_paths.append(script_base)
@@ -288,16 +293,22 @@ class ScraperApp(ctk.CTk):
 
         exe_parent = Path(sys.executable).resolve().parent
         base_paths.extend([exe_parent, exe_parent.parent, exe_parent.parent / "Resources"])
+        return list(dict.fromkeys(base_paths))
 
+    def _find_asset_pair(self, dark_filename: str, light_filename: str) -> tuple[Path | None, Path | None]:
         dark_path: Path | None = None
         light_path: Path | None = None
-        for base in dict.fromkeys(base_paths):
-            d = base / "assets" / "gear-outline-dark.png"
-            l = base / "assets" / "gear-outline-light.png"
-            if d.exists() and l.exists():
-                dark_path = d
-                light_path = l
+        for base in self._asset_search_paths():
+            candidate_dark = base / "assets" / dark_filename
+            candidate_light = base / "assets" / light_filename
+            if candidate_dark.exists() and candidate_light.exists():
+                dark_path = candidate_dark
+                light_path = candidate_light
                 break
+        return dark_path, light_path
+
+    def _load_gear_icon(self) -> None:
+        dark_path, light_path = self._find_asset_pair("gear-outline-dark.png", "gear-outline-light.png")
 
         light: Image.Image | None = None
         dark: Image.Image | None = None
@@ -315,6 +326,35 @@ class ScraperApp(ctk.CTk):
 
         self.gear_icon = ctk.CTkImage(light_image=light, dark_image=dark, size=(24, 24))
         self.gear_icon_loaded = True
+
+    def _load_title_logo(self) -> None:
+        dark_path, light_path = self._find_asset_pair(TITLE_LOGO_DARK_FILE, TITLE_LOGO_LIGHT_FILE)
+
+        light: Image.Image | None = None
+        dark: Image.Image | None = None
+        if dark_path is not None and light_path is not None:
+            try:
+                light = Image.open(light_path).convert("RGBA")
+                dark = Image.open(dark_path).convert("RGBA")
+            except Exception:
+                light = None
+                dark = None
+
+        if light is None or dark is None:
+            self.title_logo = None
+            self.title_logo_loaded = False
+            return
+
+        ratio = light.width / max(1, light.height)
+        logo_height = 24
+        logo_width = int(round(logo_height * ratio))
+        max_width = 520
+        if logo_width > max_width:
+            logo_width = max_width
+            logo_height = int(round(logo_width / ratio))
+
+        self.title_logo = ctk.CTkImage(light_image=light, dark_image=dark, size=(logo_width, logo_height))
+        self.title_logo_loaded = True
 
     def _draw_gear_icon(self, hex_color: str, size: int = 128) -> Image.Image:
         image = Image.new("RGBA", (size, size), (0, 0, 0, 0))
@@ -374,12 +414,15 @@ class ScraperApp(ctk.CTk):
         header = ctk.CTkFrame(root, fg_color="transparent")
         header.grid(row=0, column=0, sticky="ew", pady=(0, 14))
         header.grid_columnconfigure(0, weight=1)
-        ctk.CTkLabel(
-            header,
-            text="Studi0Scraper",
-            text_color=self.accent_fg,
-            font=ctk.CTkFont(size=28, weight="bold"),
-        ).grid(row=0, column=0, sticky="w")
+        if self.title_logo_loaded and self.title_logo is not None:
+            ctk.CTkLabel(header, text="", image=self.title_logo).grid(row=0, column=0, sticky="w")
+        else:
+            ctk.CTkLabel(
+                header,
+                text="Studi0Scraper",
+                text_color=self.accent_fg,
+                font=ctk.CTkFont(size=28, weight="bold"),
+            ).grid(row=0, column=0, sticky="w")
         ctk.CTkLabel(
             header,
             text="Export site content and images with a controlled crawl.",

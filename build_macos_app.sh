@@ -49,6 +49,8 @@ iconutil -c icns "$ICONSET_DIR" -o "$ICON_ICNS"
   --icon "$ICON_ICNS" \
   --add-data "assets/gear-outline-dark.png:assets" \
   --add-data "assets/gear-outline-light.png:assets" \
+  --add-data "assets/studi0scraper-title-dark.png:assets" \
+  --add-data "assets/studi0scraper-title-light.png:assets" \
   scraper_app.py
 
 mkdir -p release
