@@ -9,7 +9,7 @@ from pathlib import Path
 from PIL import Image
 
 TARGET_SIZE = 1024
-OUTPUT_NAME = "webscraper-icon-1024.png"
+OUTPUT_NAME = "studi0scraper-icon-1024.png"
 SOURCE_GLOB = "icon-source.*"
 
 

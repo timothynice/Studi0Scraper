@@ -43,7 +43,7 @@ cd /Users/TimNice/Development/WebScraper
 
 Output app:
 
-- `/Users/TimNice/Development/WebScraper/release/WebScraper.app`
+- `/Users/TimNice/Development/WebScraper/release/Studi0Scraper.app`
 
 ## Useful options
 

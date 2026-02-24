@@ -21,7 +21,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='WebScraper',
+    name='Studi0Scraper',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -32,7 +32,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['assets/WebScraper.icns'],
+    icon=['assets/Studi0Scraper.icns'],
 )
 coll = COLLECT(
     exe,
@@ -41,11 +41,11 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='WebScraper',
+    name='Studi0Scraper',
 )
 app = BUNDLE(
     coll,
-    name='WebScraper.app',
-    icon='assets/WebScraper.icns',
+    name='Studi0Scraper.app',
+    icon='assets/Studi0Scraper.icns',
     bundle_identifier=None,
 )
