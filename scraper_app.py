@@ -42,7 +42,8 @@ CONTROL_HEIGHT = 40
 BUTTON_RADIUS = 12
 ENTRY_RADIUS = 10
 CARD_RADIUS = 14
-THEME_SETTINGS_PATH = Path.home() / ".webscraper-theme.json"
+THEME_SETTINGS_PATH = Path.home() / ".studi0scraper-theme.json"
+LEGACY_THEME_SETTINGS_PATH = Path.home() / ".webscraper-theme.json"
 
 
 @dataclass(frozen=True)
@@ -154,7 +155,7 @@ def hex_to_rgba_tuple(hex_value: str, alpha: int = 255) -> tuple[int, int, int, 
 class ScraperApp(ctk.CTk):
     def __init__(self) -> None:
         super().__init__()
-        self.title("WebScraper")
+        self.title("Studi0Scraper")
         self.geometry("980x700")
         self.minsize(860, 620)
 
@@ -205,8 +206,9 @@ class ScraperApp(ctk.CTk):
             "accent_preset": "Solar Yellow",
             "custom_accent_hex": "FFFF82",
         }
+        settings_path = THEME_SETTINGS_PATH if THEME_SETTINGS_PATH.exists() else LEGACY_THEME_SETTINGS_PATH
         try:
-            data = json.loads(THEME_SETTINGS_PATH.read_text(encoding="utf-8"))
+            data = json.loads(settings_path.read_text(encoding="utf-8"))
         except Exception:
             return defaults
 
@@ -374,7 +376,7 @@ class ScraperApp(ctk.CTk):
         header.grid_columnconfigure(0, weight=1)
         ctk.CTkLabel(
             header,
-            text="WebScraper",
+            text="Studi0Scraper",
             text_color=self.accent_fg,
             font=ctk.CTkFont(size=28, weight="bold"),
         ).grid(row=0, column=0, sticky="w")
