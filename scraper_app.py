@@ -67,6 +67,36 @@ ACCENT_PRESETS: tuple[AccentPreset, ...] = (
 )
 ACCENT_PRESET_MAP = {preset.name: preset for preset in ACCENT_PRESETS}
 APPEARANCE_OPTIONS = ("System", "Light", "Dark")
+EDIT_HISTORY_WIDGET_CLASSES = frozenset({"Text", "Entry", "TEntry", "Spinbox", "TSpinbox"})
+UNDO_SHORTCUTS = ("<Command-z>", "<Control-z>")
+REDO_SHORTCUTS = (
+    "<Command-Shift-z>",
+    "<Command-Shift-Z>",
+    "<Command-y>",
+    "<Control-Shift-z>",
+    "<Control-Shift-Z>",
+    "<Control-y>",
+)
+
+
+def supports_edit_history(widget: object) -> bool:
+    if not isinstance(widget, tk.Misc):
+        return False
+    try:
+        return widget.winfo_class() in EDIT_HISTORY_WIDGET_CLASSES
+    except tk.TclError:
+        return False
+
+
+def dispatch_edit_history_event(widget: object, event_name: str) -> bool:
+    if not supports_edit_history(widget):
+        return False
+    target = widget
+    try:
+        target.event_generate(event_name)
+    except tk.TclError:
+        return False
+    return True
 
 
 def normalize_hex(value: str) -> str | None:
@@ -721,6 +751,10 @@ class ScraperApp(ctk.CTk):
         self.bind("<Command-r>", self._shortcut_toggle_run)
         self.bind("<Command-k>", self._shortcut_clear_log)
         self.bind("<Command-o>", self._shortcut_pick_output)
+        for shortcut in UNDO_SHORTCUTS:
+            self.bind_all(shortcut, self._shortcut_undo, add="+")
+        for shortcut in REDO_SHORTCUTS:
+            self.bind_all(shortcut, self._shortcut_redo, add="+")
         self.bind("<Escape>", self._shortcut_close_theme_dropdown)
         self.bind("<Button-1>", self._on_root_click, add="+")
         self.bind("<Configure>", self._on_window_configure, add="+")
@@ -739,6 +773,19 @@ class ScraperApp(ctk.CTk):
     def _shortcut_pick_output(self, _event: tk.Event) -> str:
         self._pick_output_folder()
         return "break"
+
+    def _dispatch_focus_history_event(self, event_name: str) -> bool:
+        return dispatch_edit_history_event(self.focus_get(), event_name)
+
+    def _shortcut_undo(self, _event: tk.Event) -> str | None:
+        if self._dispatch_focus_history_event("<<Undo>>"):
+            return "break"
+        return None
+
+    def _shortcut_redo(self, _event: tk.Event) -> str | None:
+        if self._dispatch_focus_history_event("<<Redo>>"):
+            return "break"
+        return None
 
     def _shortcut_close_theme_dropdown(self, _event: tk.Event) -> str:
         self._close_theme_dropdown()
